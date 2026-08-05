@@ -1326,9 +1326,92 @@ footer p{
 
     }
 
+} /* ==========================================================
+   BUTTON RIPPLE
+========================================================== */
+
+.btn{
+
+    position:relative;
+
+    overflow:hidden;
+
 }
+
+.ripple{
+
+    position:absolute;
+
+    width:20px;
+
+    height:20px;
+
+    background:rgba(255,255,255,.45);
+
+    border-radius:50%;
+
+    transform:translate(-50%,-50%);
+
+    animation:ripple .6s linear;
+
 }
+
+@keyframes ripple{
+
+    from{
+
+        width:0;
+
+        height:0;
+
+        opacity:.8;
 
     }
 
-   }
+    to{
+
+        width:450px;
+
+        height:450px;
+
+        opacity:0;
+
+    }
+
+}
+
+
+/* ==========================================================
+   ACTIVE NAVIGATION
+========================================================== */
+
+.nav-links a.active{
+
+    color:var(--primary);
+
+}
+
+.nav-links a.active::after{
+
+    width:100%;
+
+}
+
+
+/* ==========================================================
+   IMAGE FADE-IN
+========================================================== */
+
+img{
+
+    opacity:0;
+
+    transition:opacity .4s ease;
+
+}
+
+img.loaded{
+
+    opacity:1;
+
+}
