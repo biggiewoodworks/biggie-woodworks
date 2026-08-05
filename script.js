@@ -1,38 +1,74 @@
- // ==========================
-// BIGGIE WOODWORKS
-// SCRIPT.JS
-// ==========================
+/* ==========================================================
+   BIGGIE WOODWORKS
+   SCRIPT.JS
+   Version 2.0
+========================================================== */
 
-// ---------- Mobile Menu ----------
+/* ==========================================================
+   MOBILE NAVIGATION
+========================================================== */
 
 const menuBtn = document.querySelector(".menu-btn");
 const navLinks = document.querySelector(".nav-links");
 
 if (menuBtn && navLinks) {
+
     menuBtn.addEventListener("click", () => {
+
         navLinks.classList.toggle("active");
+
     });
 
     document.querySelectorAll(".nav-links a").forEach(link => {
+
         link.addEventListener("click", () => {
+
             navLinks.classList.remove("active");
+
         });
+
     });
+
+    document.addEventListener("click", (e) => {
+
+        if (
+            !menuBtn.contains(e.target) &&
+            !navLinks.contains(e.target)
+        ) {
+
+            navLinks.classList.remove("active");
+
+        }
+
+    });
+
 }
 
-// ---------- Scroll To Top ----------
 
+/* ==========================================================
+   NAVBAR + SCROLL TO TOP
+========================================================== */
+
+const navbar = document.querySelector(".navbar");
 const topBtn = document.getElementById("topBtn");
 
 window.addEventListener("scroll", () => {
 
+    if (navbar) {
+
+        navbar.classList.toggle(
+            "scrolled",
+            window.scrollY > 50
+        );
+
+    }
+
     if (topBtn) {
 
-        if (window.scrollY > 300) {
-            topBtn.style.display = "flex";
-        } else {
-            topBtn.style.display = "none";
-        }
+        topBtn.style.display =
+            window.scrollY > 350
+                ? "flex"
+                : "none";
 
     }
 
@@ -43,193 +79,316 @@ if (topBtn) {
     topBtn.addEventListener("click", () => {
 
         window.scrollTo({
+
             top: 0,
+
             behavior: "smooth"
+
         });
 
     });
 
 }
 
-// ---------- Navbar Background ----------
 
-const navbar = document.querySelector(".navbar");
+/* ==========================================================
+   SCROLL REVEAL
+========================================================== */
 
-window.addEventListener("scroll", () => {
+const observer = new IntersectionObserver(
 
-    if (!navbar) return;
+(entries)=>{
 
-    if (window.scrollY > 50) {
-        navbar.classList.add("scrolled");
-    } else {
-        navbar.classList.remove("scrolled");
-    }
+    entries.forEach(entry=>{
 
-});
+        if(entry.isIntersecting){
 
-// ---------- Scroll Reveal ----------
-
-const observer = new IntersectionObserver((entries) => {
-
-    entries.forEach(entry => {
-
-        if (entry.isIntersecting) {
             entry.target.classList.add("show");
+
         }
 
     });
 
-},{
-    threshold:0.2
-});
+},
 
-document.querySelectorAll("section").forEach(section => {
+{
+    threshold:0.15
+}
+
+);
+
+document.querySelectorAll("section").forEach(section=>{
+
     section.classList.add("hidden");
-    observer.observe(section);
-});
 
-// ---------- Gallery Lightbox With Swipe ----------
+    observer.observe(section);
+
+});
+/* ==========================================================
+   PROFESSIONAL GALLERY LIGHTBOX
+========================================================== */
 
 const galleryImages = document.querySelectorAll(".gallery-item img");
 const lightbox = document.querySelector(".lightbox");
-console.log(lightbox);
 const lightboxImg = document.querySelector(".lightbox-img");
 const closeBtn = document.querySelector(".close-lightbox");
 
-let currentImage = 0;
-let imageSources = [];
+let currentIndex = 0;
 
-galleryImages.forEach(img => {
-    imageSources.push({
-        src: img.src,
-        alt: img.alt
+const images = [...galleryImages];
+
+function openLightbox(index){
+
+    currentIndex = index;
+
+    lightbox.classList.add("active");
+
+    document.body.style.overflow = "hidden";
+
+    updateImage();
+
+}
+
+function closeLightbox(){
+
+    lightbox.classList.remove("active");
+
+    document.body.style.overflow = "";
+
+}
+
+function updateImage(){
+
+    lightboxImg.src = images[currentIndex].src;
+
+    lightboxImg.alt = images[currentIndex].alt;
+
+}
+
+function nextImage(){
+
+    currentIndex++;
+
+    if(currentIndex >= images.length){
+
+        currentIndex = 0;
+
+    }
+
+    updateImage();
+
+}
+
+function previousImage(){
+
+    currentIndex--;
+
+    if(currentIndex < 0){
+
+        currentIndex = images.length - 1;
+
+    }
+
+    updateImage();
+
+}
+
+images.forEach((img,index)=>{
+
+    img.addEventListener("click",()=>{
+
+        openLightbox(index);
+
     });
+
+});
+
+if(closeBtn){
+
+    closeBtn.addEventListener("click",closeLightbox);
+
+}
+
+if(lightbox){
+
+    lightbox.addEventListener("click",(e)=>{
+
+        if(e.target===lightbox){
+
+            closeLightbox();
+
+        }
+
+    });
+
+}
+
+/* ==========================================================
+   KEYBOARD SUPPORT
+========================================================== */
+
+document.addEventListener("keydown",(e)=>{
+
+    if(!lightbox.classList.contains("active")) return;
+
+    if(e.key==="Escape"){
+
+        closeLightbox();
+
+    }
+
+    if(e.key==="ArrowRight"){
+
+        nextImage();
+
+    }
+
+    if(e.key==="ArrowLeft"){
+
+        previousImage();
+
+    }
+
+});
+
+/* ==========================================================
+   MOBILE SWIPE
+========================================================== */
+
+let startX = 0;
+
+lightboxImg.addEventListener("touchstart",(e)=>{
+
+    startX = e.touches[0].clientX;
+
+});
+
+lightboxImg.addEventListener("touchend",(e)=>{
+
+    let endX = e.changedTouches[0].clientX;
+
+    if(startX-endX>60){
+
+        nextImage();
+
+    }
+
+    if(endX-startX>60){
+
+        previousImage();
+
+    }/* ==========================================================
+   GALLERY PRELOAD
+========================================================== */
+
+images.forEach(image => {
+
+    const preload = new Image();
+
+    preload.src = image.src;
+
 });
 
 
-if (galleryImages.length && lightbox && lightboxImg && closeBtn) {
+/* ==========================================================
+   SMOOTH ACTIVE NAVIGATION
+========================================================== */
 
+const sections = document.querySelectorAll("section");
+const navItems = document.querySelectorAll(".nav-links a");
 
-    galleryImages.forEach((img, index) => {
+window.addEventListener("scroll", () => {
 
-        img.addEventListener("click", () => {
+    let current = "";
 
-            currentImage = index;
+    sections.forEach(section => {
 
-            lightbox.classList.add("active");
+        const top = section.offsetTop - 120;
 
-            showImage();
+        const height = section.offsetHeight;
 
-        });
+        if (window.scrollY >= top &&
+            window.scrollY < top + height) {
 
-    });
-
-
-    function showImage(){
-
-        lightboxImg.src = imageSources[currentImage].src;
-        lightboxImg.alt = imageSources[currentImage].alt;
-
-    }
-
-
-    function nextImage(){
-
-        currentImage++;
-
-        if(currentImage >= imageSources.length){
-            currentImage = 0;
-        }
-
-        showImage();
-
-    }
-
-
-    function previousImage(){
-
-        currentImage--;
-
-        if(currentImage < 0){
-            currentImage = imageSources.length - 1;
-        }
-
-        showImage();
-
-    }
-
-
-    // Swipe support
-
-    let startX = 0;
-
-
-    lightboxImg.addEventListener("touchstart", (e)=>{
-
-        startX = e.touches[0].clientX;
-
-    });
-
-
-    lightboxImg.addEventListener("touchend", (e)=>{
-
-        let endX = e.changedTouches[0].clientX;
-
-        if(startX - endX > 50){
-
-            nextImage();
-
-        }
-
-        if(endX - startX > 50){
-
-            previousImage();
+            current = section.getAttribute("id");
 
         }
 
     });
 
+    navItems.forEach(link => {
 
-    closeBtn.addEventListener("click", () => {
+        link.classList.remove("active");
 
-        lightbox.classList.remove("active");
+        if (link.getAttribute("href") === "#" + current) {
 
-    });
-
-
-    lightbox.addEventListener("click", (e)=>{
-
-        if(e.target === lightbox){
-
-            lightbox.classList.remove("active");
+            link.classList.add("active");
 
         }
 
     });
 
+});
 
-}
 
-// ==========================
-// SCROLL REVEAL ANIMATION
-// ==========================
+/* ==========================================================
+   BUTTON RIPPLE EFFECT
+========================================================== */
 
-const revealElements = document.querySelectorAll("section");
+document.querySelectorAll(".btn").forEach(button => {
 
-function revealOnScroll() {
-    const windowHeight = window.innerHeight;
+    button.addEventListener("click", function(e) {
 
-    revealElements.forEach(element => {
-        const elementTop = element.getBoundingClientRect().top;
-        const revealPoint = 100;
+        const ripple = document.createElement("span");
 
-        if (elementTop < windowHeight - revealPoint) {
-            element.classList.add("show");
-        }
+        const rect = this.getBoundingClientRect();
+
+        ripple.style.left = (e.clientX - rect.left) + "px";
+
+        ripple.style.top = (e.clientY - rect.top) + "px";
+
+        ripple.classList.add("ripple");
+
+        this.appendChild(ripple);
+
+        setTimeout(() => {
+
+            ripple.remove();
+
+        }, 600);
+
     });
-}
 
-window.addEventListener("scroll", revealOnScroll);
+});
 
-// Run once when page loads
-revealOnScroll();
+
+/* ==========================================================
+   IMAGE FADE-IN
+========================================================== */
+
+const allImages = document.querySelectorAll("img");
+
+allImages.forEach(img => {
+
+    img.addEventListener("load", () => {
+
+        img.classList.add("loaded");
+
+    });
+
+});
+
+
+/* ==========================================================
+   WEBSITE READY
+========================================================== */
+
+window.addEventListener("load", () => {
+
+    document.body.classList.add("loaded");
+
+    console.log("Biggie Woodworks Website Ready.");
+
+});
+
+});
